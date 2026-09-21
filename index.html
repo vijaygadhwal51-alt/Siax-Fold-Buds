@@ -548,6 +548,68 @@
     <p>© 2026 SIAX. Folds Into Freedom. All product photography shown is of the actual unit.</p>
   </div>
 </footer>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
+<script>
+async function startSiaxPayment() {
+  try {
+    const orderResponse = await fetch("/api/create-order", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    const order = await orderResponse.json();
+
+    if (!orderResponse.ok) {
+      throw new Error(order.error || "Order creation failed");
+    }
+
+    const options = {
+      key: "YOUR_RAZORPAY_KEY_ID",
+      amount: order.amount,
+      currency: "INR",
+      name: "SIAX FOLD",
+      description: "SIAX FOLDBUDS",
+      order_id: order.id,
+
+      handler: async function (response) {
+        const verifyResponse = await fetch("/api/verify-payment", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(response)
+        });
+
+        const result = await verifyResponse.json();
+
+        if (result.verified) {
+          alert("Payment successful! Thank you for ordering SIAX FOLDBUDS.");
+        } else {
+          alert("Payment verification failed. Please contact support.");
+        }
+      },
+
+      theme: {
+        color: "#111111"
+      }
+    };
+
+    const razorpay = new Razorpay(options);
+
+    razorpay.on("payment.failed", function () {
+      alert("Payment failed. Please try again.");
+    });
+
+    razorpay.open();
+
+  } catch (error) {
+    console.error(error);
+    alert("Unable to start payment. Please try again.");
+  }
+}
+</script>
 </body>
 </html>
