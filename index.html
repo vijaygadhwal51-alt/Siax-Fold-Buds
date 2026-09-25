@@ -307,6 +307,29 @@
   @media(min-width:760px){ .foot-grid{ flex-direction:row; align-items:center; justify-content:space-between; } }
 
   ::selection{ background:var(--racing-red); color:#fff; }
+
+  /* PAYU CHECKOUT MODAL */
+  .checkout-modal{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.78);backdrop-filter:blur(10px);}
+  .checkout-modal.open{display:flex;}
+  .checkout-box{width:min(560px,100%);max-height:92vh;overflow:auto;background:var(--bg-card);border:1px solid var(--line);border-radius:24px;padding:28px;box-shadow:0 24px 80px rgba(0,0,0,.55);position:relative;}
+  .checkout-close{position:absolute;right:16px;top:14px;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--text);font-size:24px;cursor:pointer;}
+  .checkout-box h2{font-size:24px;font-weight:600;padding-right:45px;}
+  .checkout-box .sub{margin-top:8px;color:var(--text-dim);font-size:13px;line-height:1.5;}
+  .checkout-product{margin:20px 0;padding:16px;border:1px solid var(--line);border-radius:14px;display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--bg-raised);}
+  .checkout-product strong{font-family:'Unbounded';font-size:14px;}
+  .checkout-price{font-family:'Unbounded';font-size:18px;color:var(--racing-red);white-space:nowrap;}
+  .checkout-form{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+  .checkout-field{display:flex;flex-direction:column;gap:6px;}
+  .checkout-field.full{grid-column:1/-1;}
+  .checkout-field label{font-size:12px;color:var(--text-dim);font-weight:700;}
+  .checkout-field input{width:100%;padding:13px 14px;border-radius:11px;border:1px solid var(--line);background:#100c0b;color:var(--text);font:inherit;outline:none;}
+  .checkout-field input:focus{border-color:rgba(221,2,0,.7);}
+  .checkout-submit{width:100%;margin-top:18px;padding:15px;border:0;border-radius:12px;background:var(--racing-red);color:#fff;font:700 15px 'Manrope';cursor:pointer;box-shadow:0 10px 25px rgba(221,2,0,.25);}
+  .checkout-submit:disabled{opacity:.6;cursor:wait;}
+  .checkout-note{margin-top:12px;text-align:center;color:var(--text-dim);font-size:11px;line-height:1.5;}
+  .checkout-error{display:none;margin-top:12px;padding:11px 12px;border-radius:10px;background:rgba(221,2,0,.12);border:1px solid rgba(221,2,0,.3);color:#ffb0ae;font-size:12px;line-height:1.5;}
+  @media(max-width:520px){.checkout-box{padding:22px 18px;border-radius:20px}.checkout-form{grid-template-columns:1fr}.checkout-field.full{grid-column:auto;}.checkout-modal{padding:10px;}}
+
 </style>
 </head>
 <body>
@@ -504,9 +527,7 @@
         <div class="price-save">54% OFF</div>
       </div>
       <div class="hero-ctas">
-        <button class=<button class="btn-primary" onclick="startSiaxPayment()">
-    Order Now — Prepaid Checkout
-</button>
+        <button class="btn-primary" type="button" onclick="openCheckout()">Order Now — Prepaid Checkout</button>
       </div>
       <div class="hero-trust">
         <span><i class="dot"></i>7-Day Replacement</span>
@@ -544,74 +565,117 @@
   </div>
 </section>
 
+
+<div class="checkout-modal" id="checkoutModal" aria-hidden="true">
+  <div class="checkout-box" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
+    <button class="checkout-close" type="button" onclick="closeCheckout()" aria-label="Close">×</button>
+    <h2 id="checkoutTitle">Complete your order</h2>
+    <p class="sub">Enter your delivery details. You will be redirected to PayU's secure payment page.</p>
+    <div class="checkout-product"><strong>SIAX FOLD Wireless Earbuds</strong><span class="checkout-price">₹1,599</span></div>
+    <form class="checkout-form" id="checkoutForm">
+      <div class="checkout-field"><label for="payName">Full Name *</label><input id="payName" name="firstname" type="text" autocomplete="name" required placeholder="Your full name"></div>
+      <div class="checkout-field"><label for="payPhone">Phone *</label><input id="payPhone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" pattern="[0-9]{10}" maxlength="10" required placeholder="10-digit mobile"></div>
+      <div class="checkout-field full"><label for="payEmail">Email *</label><input id="payEmail" name="email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+      <div class="checkout-field full"><label for="payAddress">Address *</label><input id="payAddress" name="address" type="text" autocomplete="street-address" required placeholder="House / Flat / Street / Area"></div>
+      <div class="checkout-field"><label for="payCity">City *</label><input id="payCity" name="city" type="text" autocomplete="address-level2" required placeholder="City"></div>
+      <div class="checkout-field"><label for="payState">State *</label><input id="payState" name="state" type="text" autocomplete="address-level1" required placeholder="State"></div>
+      <div class="checkout-field"><label for="payZip">PIN Code *</label><input id="payZip" name="zipcode" type="text" inputmode="numeric" autocomplete="postal-code" pattern="[0-9]{6}" maxlength="6" required placeholder="6-digit PIN"></div>
+      <div class="checkout-field"><label for="payCountry">Country</label><input id="payCountry" type="text" value="India" disabled></div>
+    </form>
+    <div class="checkout-error" id="checkoutError"></div>
+    <button class="checkout-submit" id="payButton" type="button" onclick="startPayU()">Continue to Secure Payment — ₹1,599</button>
+    <div class="checkout-note">By continuing, you agree to place a prepaid order for SIAX FOLD. Payment is processed securely by PayU.</div>
+  </div>
+</div>
+
 <footer>
   <div class="wrap foot-grid">
     <div class="foot-logo">SIAX<span>·</span>FOLD</div>
     <p>© 2026 SIAX. Folds Into Freedom. All product photography shown is of the actual unit.</p>
   </div>
 </footer>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
-async function startSiaxPayment() {
-  try {
-    const orderResponse = await fetch("/api/create-order", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
+(function(){
+  const modal=document.getElementById('checkoutModal');
+  const form=document.getElementById('checkoutForm');
+  const errorBox=document.getElementById('checkoutError');
+  const payButton=document.getElementById('payButton');
 
-    const order = await orderResponse.json();
+  window.openCheckout=function(){
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+    setTimeout(()=>document.getElementById('payName').focus(),50);
+  };
+  window.closeCheckout=function(){
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+  };
 
-    if (!orderResponse.ok) {
-      throw new Error(order.error || "Order creation failed");
-    }
+  modal.addEventListener('click',function(e){ if(e.target===modal) closeCheckout(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape' && modal.classList.contains('open')) closeCheckout(); });
 
-    const options = {
-      key: "rzp_test_TebQqGd966z8FJ",
-      amount: order.amount,
-      currency: "INR",
-      name: "SIAX FOLD",
-      description: "SIAX FOLDBUDS",
-      order_id: order.id,
-
-      handler: async function (response) {
-        const verifyResponse = await fetch("/api/verify-payment", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(response)
-        });
-
-        const result = await verifyResponse.json();
-
-        if (result.verified) {
-          alert("Payment successful! Thank you for ordering SIAX FOLDBUDS.");
-        } else {
-          alert("Payment verification failed. Please contact support.");
-        }
-      },
-
-      theme: {
-        color: "#111111"
-      }
-    };
-
-    const razorpay = new Razorpay(options);
-
-    razorpay.on("payment.failed", function () {
-      alert("Payment failed. Please try again.");
-    });
-
-    razorpay.open();
-
-  } catch (error) {
-    console.error(error);
-    alert("Unable to start payment. Please try again.");
+  function showError(message){
+    errorBox.textContent=message;
+    errorBox.style.display='block';
   }
-}
+
+  window.startPayU=async function(){
+    errorBox.style.display='none';
+    if(!form.reportValidity()) return;
+
+    const fd=new FormData(form);
+    const payload=Object.fromEntries(fd.entries());
+    payload.firstname=String(payload.firstname||'').trim();
+    payload.email=String(payload.email||'').trim();
+    payload.phone=String(payload.phone||'').replace(/\D/g,'');
+    payload.address=String(payload.address||'').trim();
+    payload.city=String(payload.city||'').trim();
+    payload.state=String(payload.state||'').trim();
+    payload.zipcode=String(payload.zipcode||'').replace(/\D/g,'');
+
+    if(!/^[0-9]{10}$/.test(payload.phone)){ showError('Please enter a valid 10-digit mobile number.'); return; }
+    if(!/^[0-9]{6}$/.test(payload.zipcode)){ showError('Please enter a valid 6-digit PIN code.'); return; }
+
+    payButton.disabled=true;
+    payButton.textContent='Connecting to PayU…';
+
+    try{
+      const response=await fetch('/api/create-payment',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload)
+      });
+      const result=await response.json().catch(()=>({}));
+      if(!response.ok || !result.success || !result.paymentUrl || !result.data){
+        throw new Error(result.error || 'Unable to start payment. Please try again.');
+      }
+
+      // PayU expects a POST form submission to its hosted checkout URL.
+      const payForm=document.createElement('form');
+      payForm.method='POST';
+      payForm.action=result.paymentUrl;
+      payForm.style.display='none';
+      Object.entries(result.data).forEach(([key,value])=>{
+        const input=document.createElement('input');
+        input.type='hidden';
+        input.name=key;
+        input.value=value == null ? '' : String(value);
+        payForm.appendChild(input);
+      });
+      document.body.appendChild(payForm);
+      payForm.submit();
+    }catch(err){
+      console.error('PayU checkout error:',err);
+      showError(err.message || 'Payment could not be started. Please try again.');
+      payButton.disabled=false;
+      payButton.textContent='Continue to Secure Payment — ₹1,599';
+    }
+  };
+})();
 </script>
+
 </body>
 </html>
